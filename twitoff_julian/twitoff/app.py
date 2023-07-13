@@ -1,4 +1,9 @@
-"""This is what brings the application together"""
+# Twitoff Application Documentation
+
+"""
+This documentation provides an overview of the Twitoff application and its main functionalities.
+"""
+
 from os import getenv
 from flask import Flask, render_template, request
 from .predict import predict_user
@@ -21,17 +26,40 @@ def create_app():
 
     @app.route('/')
     def root():
+        """
+        This route displays the home page of the application, showing a base template with a list of all users stored in the database.
+
+        HTTP Method: GET
+
+        Returns:
+        - `base.html`: The base template with the list of users
+        """
         return render_template('base.html', title="Home", users=User.query.all())
 
     @app.route('/update')
     def update():
-        '''updates all users'''
+        """
+        This route triggers the update of all users in the database. It calls the `update_all_users()` function to fetch the latest data from Twitter and updates the database accordingly.
+
+        HTTP Method: GET
+
+        Returns:
+        - None
+        """
         usernames = update_all_users()
         for username in usernames:
             add_or_update_user(username)
 
     @app.route('/reset')
     def reset():
+        """
+        This route resets the database by dropping all tables and recreating them. It is used for database maintenance or to start with a clean slate.
+
+        HTTP Method: GET
+
+        Returns:
+        - `base.html`: The base template indicating that the database has been reset
+        """
         DB.drop_all()
         DB.create_all()
         return render_template("base.html", title="Reset Database")
@@ -39,10 +67,17 @@ def create_app():
     @app.route('/user', methods=["POST"])
     @app.route('/user/<name>', methods=["GET"])
     def user(name=None, message=''):
+        """
+        These routes handle user-related functionality, including adding or updating a user and retrieving user information.
 
-        # we either take name that was passed in or we pull it
-        # from our request.values which would be accessed through the
-        # user submission
+        HTTP Method: POST (for adding/updating a user), GET (for retrieving user information)
+
+        Parameters:
+        - `name` (optional): The username of the user to retrieve or add/update
+
+        Returns:
+        - `user.html`: The user template with user-specific information, including their tweets and a message indicating the success or failure of the operation
+        """
         name = name or request.values['user_name']
         try:
             if request.method == 'POST':
@@ -53,23 +88,26 @@ def create_app():
 
         except Exception as e:
             message = "Error adding {}: {}".format(name, e)
-
             tweets = []
 
         return render_template("user.html", title=name, tweets=tweets, message=message)
 
     @app.route('/compare', methods=["POST"])
     def compare():
-        user0, user1 = sorted(
-            [request.values['user0'], request.values["user1"]])
+        """
+        This route handles the comparison of two users based on a provided tweet. It calls the `predict_user()` function to predict which user is more likely to have authored the tweet.
+
+        HTTP Method: POST
+
+        Returns:
+        - `prediction.html`: The prediction template displaying the prediction message indicating the more likely author of the tweet
+        """
+        user0, user1 = sorted([request.values['user0'], request.values["user1"]])
 
         if user0 == user1:
             message = "Cannot compare users to themselves!"
-
         else:
-            # prediction returns a 0 or 1
-            prediction = predict_user(
-                user0, user1, request.values["tweet_text"])
+            prediction = predict_user(user0, user1, request.values["tweet_text"])
             message = "'{}' is more likely to be said by {} than {}!".format(
                 request.values["tweet_text"],
                 user1 if prediction else user0,

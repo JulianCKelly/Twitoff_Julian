@@ -8,7 +8,22 @@ URL = getenv("NOT_TWITTER_URL")
 
 
 class Tweet:
+    """
+    The `Tweet` class represents a tweet from the Not Twitter API.
 
+    Attributes:
+    - `full_text`: The full text of the tweet.
+
+    Methods:
+    - `__repr__()`: Returns a string representation of the tweet object.
+    - `__str__()`: Returns the full text of the tweet.
+
+    Example Usage:
+    ```python
+    tweet = Tweet({"full_text": "This is a tweet"})
+    print(tweet)  # Output: "This is a tweet"
+    ```
+    """
     def __init__(self, data: Dict):
         self.full_text = ""
         self.__dict__.update(data)
@@ -21,7 +36,23 @@ class Tweet:
 
 
 class User:
+    """
+    The `User` class represents a user from the Not Twitter API.
 
+    Attributes:
+    - `screen_name`: The screen name of the user.
+
+    Methods:
+    - `timeline(*args, **kwargs)`: Retrieves the timeline of the user.
+
+    Example Usage:
+    ```python
+    user = User({"screen_name": "username"})
+    tweets = user.timeline()
+    for tweet in tweets:
+        print(tweet)
+    ```
+    """
     def __init__(self, data: Dict):
         self.screen_name = data.get('screen_name')
         user_data = requests.get(f"{URL}/user/{self.screen_name}",
